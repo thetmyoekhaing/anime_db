@@ -38,7 +38,7 @@ dependencies:
   get: ^4.6.5
   dio: ^5.2.1+1
   json_annotation: ^4.8.1
-  infinite_scroll_pagination: ^3.2.0
+  url_launcher: ^6.1.11
 
 dev_dependencies:
   flutter_test:
@@ -52,6 +52,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
   build_runner: ^2.4.5
+  mockito: ^5.4.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

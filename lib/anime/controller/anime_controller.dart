@@ -1,30 +1,18 @@
+import 'package:anime_db/anime/controller/anime_navigation.dart';
 import 'package:anime_db/anime/model/anime_model.dart';
 import 'package:anime_db/api/api_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
-class AnimeController extends GetxController {
-  ApiModel apiModel = ApiModel();
-  ScrollController scrollController = ScrollController();
-  int totalPage = 0;
-  RxInt currentPage = 1.obs;
-  List<String> pagesList = [];
-
-  RxList<AnimeModel> animeList = <AnimeModel>[].obs;
-  RxBool isLoading = true.obs;
-  RxBool isScrollLoading = true.obs;
-
-  final PagingController<int, AnimeModel> _pagingController =
-      PagingController(firstPageKey: 1);
-
+class AnimeController extends _AnimeController {
   Future<void> fetchAnime(int currentPage) async {
-    isLoading.value = true;
+    print('fetch');
+    print('current page $currentPage');
     try {
+      // isLoading.value = true;
       final res = await apiModel.fetchData(
           what: 'anime', page: currentPage.toString(), size: '10');
-      totalPage = res['meta']['totalPage'];
-      // print('total page $totalPage');
+      // totalPage = res['meta']['totalPage'];
       if (res != null) {
         for (var i = 0; i < res['data'].length; i++) {
           final data = AnimeModel.fromJson(res['data'][i]);
@@ -32,44 +20,50 @@ class AnimeController extends GetxController {
           animeList.refresh();
           print('added');
         }
-        isLoading.value = false;
       }
+      isLoading.value = false;
+
+      print("fetch done");
     } catch (e) {
-      _pagingController.error = e;
+      print("catch");
+      print(e);
     }
   }
 
-  // void pages() {
-  //   if (currentPage.value == 1 && currentPage.value < 4) {
-  //     pagesList = [...pagesList, "1", "2", "3", "Next", "Last Page"];
-  //   } else {
-  //     pagesList = [
-  //       "First",
-  //       '$currentPage',
-  //       '$currentPage+1',
-  //       '$currentPage+2',
-  //       'Next',
-  //       "Last Page"
-  //     ];
-  //   }
+  void _listener() {
+    // print('called listener');
+    if (scrollController.position.pixels ==
+        scrollController.position.maxScrollExtent) {
+      fetchAnime(++currentPage.value);
+    }
+  }
+
+  void goDetail({required AnimeModel anime}) {
+    print('anime detail --> $anime');
+    detailAnime = anime;
+    print('detail anime ${detailAnime.title}');
+    Get.toNamed(
+      AnimeNavigation.animeDetail,
+      id: AnimeNavigation.id,
+    );
+  }
+
+  // @override
+  // void onInit() async {
+  //   fetchAnime(currentPage.value);
+  //   super.onInit();
   // }
 
   @override
-  void onInit() async {
-    _pagingController.addPageRequestListener((pageKey) {
-      fetchAnime(pageKey);
-    });
-    // scrollController.addListener(() {
-    //   if (scrollController.position.maxScrollExtent ==
-    //       scrollController.offset) {
-    //     print('called');
-    //     // fetchAnime(currentPage.value++);
-    //     // isScrollLoading.value = false;
-    //   } else {
-    //     print('called from else');
-    //     isScrollLoading.value = true;
-    //   }
-    // });
+  void onReady() {
+    print("anime ready");
+    scrollController.addListener(() => _listener());
+    super.onReady();
+  }
+
+  @override
+  void onInit() {
+    fetchAnime(currentPage.value);
     super.onInit();
   }
 
@@ -78,4 +72,13 @@ class AnimeController extends GetxController {
     scrollController.dispose();
     super.onClose();
   }
+}
+
+class _AnimeController extends GetxController {
+  ApiModel apiModel = ApiModel();
+  ScrollController scrollController = ScrollController();
+  RxInt currentPage = 1.obs;
+  AnimeModel detailAnime = AnimeModel();
+  RxList<AnimeModel> animeList = <AnimeModel>[].obs;
+  RxBool isLoading = true.obs;
 }

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 class BottomNavbarModel {
   String name;
-  String route;
   IconData icon;
+  Widget body;
   BottomNavbarModel(
-      {required this.name, required this.route, required this.icon});
+      {required this.name, required this.icon, required this.body});
 }
